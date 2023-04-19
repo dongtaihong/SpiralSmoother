@@ -18,10 +18,10 @@ CMakeLists.txt里面需要添加python相关的依赖，具体参考我的CMakeL
 ## 编译运行
 ```shell
 git clone https://github.com/dongtaihong/SpiralSmoother.git
-cd SplineSmoother
+cd SpiralaSmoother
 mkdir build && cd build
 cmake .. && make
-./SplineSmoother
+./SpiralSmoother
 ```
 ## 效果
 说明：算法原理及如何调试请参考pdf文件
