@@ -18,7 +18,7 @@ CMakeLists.txt里面需要添加python相关的依赖，具体参考我的CMakeL
 ## 编译运行
 ```shell
 git clone https://github.com/dongtaihong/SpiralSmoother.git
-cd SpiralaSmoother
+cd SpiralSmoother
 mkdir build && cd build
 cmake .. && make
 ./SpiralSmoother
