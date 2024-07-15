@@ -1,0 +1,2 @@
+/usr/bin/ar qc libipopt_interface.a  CMakeFiles/ipopt_interface.dir/src/ipopt_interface.cpp.o
+/usr/bin/ranlib libipopt_interface.a

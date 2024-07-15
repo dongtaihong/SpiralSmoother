@@ -15,6 +15,7 @@ SpiralSmoother::SpiralSmoother() {
   Ipopt::SmartPtr<Ipopt::IpoptApplication> app = IpoptApplicationFactory();
 
   app->Options()->SetStringValue("hessian_approximation", "limited-memory");
+  app->Options()->SetIntegerValue("max_iter", 1000);
   app->Options()->SetNumericValue("tol", 1);
   app->Options()->SetNumericValue("acceptable_tol", 1);
 

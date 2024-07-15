@@ -39,7 +39,7 @@ class CsvSourceData {
   vector<pair<double, double>> input_points;
   vector<double> distance;         //两点的距离
   vector<double> relative_theta_;  //存储原始点的heading
-  double boundary = 0.4;           //位置约束
+  double boundary = 0.3;           //位置约束
   int m = 5;                       //高斯-勒让德数值积分分段数量
 };
 

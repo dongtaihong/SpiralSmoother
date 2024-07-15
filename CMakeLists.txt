@@ -9,7 +9,7 @@ find_package(Python3 COMPONENTS NumPy)
 
 # ipopt library
 set(IPOPT_LIBRARY_DIRS /usr/local/lib)
-set(IPOPT_INCLUDE_DIRS /usr/include/coin)
+set(IPOPT_INCLUDE_DIRS /usr/local/include/coin)
 include_directories(
     ${IPOPT_INCLUDE_DIRS} 
     ${CMAKE_SOURCE_DIR}/include

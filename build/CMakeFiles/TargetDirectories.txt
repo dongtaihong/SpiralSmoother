@@ -1,0 +1,4 @@
+/home/dth/草稿/SpiralSmoother/build/CMakeFiles/rebuild_cache.dir
+/home/dth/草稿/SpiralSmoother/build/CMakeFiles/edit_cache.dir
+/home/dth/草稿/SpiralSmoother/build/CMakeFiles/SpiralSmoother.dir
+/home/dth/草稿/SpiralSmoother/build/CMakeFiles/ipopt_interface.dir

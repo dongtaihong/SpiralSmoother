@@ -12,9 +12,9 @@
 #include "SpiralDerive.hpp"
 #include "matplotlibcpp.h"
 
-double weight_curve_length_ = 100.0;
+double weight_curve_length_ = 500.0;
 double weight_kappa_ = 0.1;
-double weight_dkappa_ = 5.0;
+double weight_dkappa_ = 1.0;
 
 namespace plt = matplotlibcpp;
 
@@ -55,8 +55,9 @@ void CsvSourceData::GetSourceData(const char* filename) {
              pow(temp_point.second - input_points[input_index].second, 2));
     heading_ = atan2((temp_point.second - input_points.back().second),
                      (temp_point.first - input_points.back().first));
+    // std::cout << "1" << std::endl;
     //每隔2.5米左右采一个参考点（间隔可以自己去调，比如1米就把这里判断条件改成1左右）
-    if (distance_ > 1.7 && distance_ < 3.3) {
+    if (distance_ > 0.7 && distance_ < 3.3) {
       input_points.emplace_back(temp_point);
       this->distance.emplace_back(distance_);
       this->relative_theta_.emplace_back(heading_);
@@ -65,6 +66,7 @@ void CsvSourceData::GetSourceData(const char* filename) {
     line_number++;
   }
   this->number = input_points.size();
+  std::cout << "number: " << this->number;
   relative_theta_.emplace_back(relative_theta_.back());
 }
 
@@ -112,36 +114,36 @@ bool SpiralSmootherNLP::get_bounds_info(Ipopt::Index n, Ipopt::Number* x_l,
     double y_upper = 0.0;
     if (i == 0) {
       //起点约束
-      theta_lower = SourceData.relative_theta_[0];
-      theta_upper = SourceData.relative_theta_[0];
-      kappa_lower = -0.0;
-      kappa_upper = 0.0;
-      dkappa_lower = -0.01;
-      dkappa_upper = 0.01;
-      x_lower = SourceData.input_points[0].first;
-      x_upper = SourceData.input_points[0].first;
-      y_lower = SourceData.input_points[0].second;
-      y_upper = SourceData.input_points[0].second;
+      theta_lower = SourceData.relative_theta_[0] - 0.001;
+      theta_upper = SourceData.relative_theta_[0] + 0.001;
+      kappa_lower = -0.1;
+      kappa_upper = 0.1;
+      dkappa_lower = -0.05;
+      dkappa_upper = 0.05;
+      x_lower = SourceData.input_points[0].first - 0.001;
+      x_upper = SourceData.input_points[0].first + 0.001;
+      y_lower = SourceData.input_points[0].second - 0.001;
+      y_upper = SourceData.input_points[0].second + 0.001;
     } else if (i == SourceData.number - 1) {
       //终点约束
-      theta_lower = SourceData.relative_theta_.back();
-      theta_upper = SourceData.relative_theta_.back();
-      kappa_lower = -0.0;
-      kappa_upper = 0.0;
-      dkappa_lower = -0.01;
-      dkappa_upper = 0.01;
-      x_lower = SourceData.input_points.back().first;
-      x_upper = SourceData.input_points.back().first;
-      y_lower = SourceData.input_points.back().second;
-      y_upper = SourceData.input_points.back().second;
+      theta_lower = SourceData.relative_theta_.back() - 0.001;
+      theta_upper = SourceData.relative_theta_.back() + 0.001;
+      kappa_lower = -0.1;
+      kappa_upper = 0.1;
+      dkappa_lower = -0.05;
+      dkappa_upper = 0.05;
+      x_lower = SourceData.input_points.back().first - 0.001;
+      x_upper = SourceData.input_points.back().first + 0.001;
+      y_lower = SourceData.input_points.back().second - 0.001;
+      y_upper = SourceData.input_points.back().second + 0.001;
     } else {
       //中间点的运动学与边界约束
       theta_lower = SourceData.relative_theta_[i] - M_PI * 0.5;
       theta_upper = SourceData.relative_theta_[i] + M_PI * 0.5;
-      kappa_lower = -0.10;
-      kappa_upper = 0.10;
-      dkappa_lower = -0.01;
-      dkappa_upper = 0.01;
+      kappa_lower = -0.20;
+      kappa_upper = 0.20;
+      dkappa_lower = -0.05;
+      dkappa_upper = 0.05;
       x_lower = SourceData.input_points[i].first - SourceData.boundary;
       x_upper = SourceData.input_points[i].first + SourceData.boundary;
       y_lower = SourceData.input_points[i].second - SourceData.boundary;
@@ -176,11 +178,11 @@ bool SpiralSmootherNLP::get_bounds_info(Ipopt::Index n, Ipopt::Number* x_l,
   //段连接点的位置约束：等式约束，上下界都是0
   for (int i = 0; i < SourceData.number - 1; ++i) {
     // x
-    g_l[i * 2] = 0.0;
-    g_u[i * 2] = 0.0;
+    g_l[i * 2] = 0.0 - 0.001;
+    g_u[i * 2] = 0.0 + 0.001;
     // y
-    g_l[i * 2 + 1] = 0.0;
-    g_u[i * 2 + 1] = 0.0;
+    g_l[i * 2 + 1] = 0.0 - 0.001;
+    g_u[i * 2 + 1] = 0.0 + 0.001;
   }
   //每个点的位置约束
   int constraint_offset = 2 * (SourceData.number - 1);
@@ -267,6 +269,14 @@ bool SpiralSmootherNLP::eval_grad_f(Ipopt::Index n, const Ipopt::Number* x,
     int index0 = i * 5;
     int index1 = (i + 1) * 5;
     double delta_si = x[5 * SourceData.number + i];
+    double theta_i = x[5 * i + 0];
+    double dtheta_i = x[5 * i + 1];
+    double ddtheta_i = x[5 * i + 2];
+    double theta_i_1 = x[5 * (i + 1) + 0];
+    double dtheta_i_1 = x[5 * (i + 1) + 1];
+    double ddtheta_i_1 = x[5 * (i + 1) + 2];
+    CoefInitialize(theta_i, dtheta_i, ddtheta_i, theta_i_1, dtheta_i_1,
+                   ddtheta_i_1, delta_si);
 
     grad_f[variable_offset + i] = weight_curve_length_ * 1.0;
     for (int j = 0; j < SourceData.m; ++j) {
@@ -641,7 +651,7 @@ void SpiralSmootherNLP::finalize_solution(
     opt_xi.emplace_back(x[5 * i + 3]);
     opt_yi.emplace_back(x[5 * i + 4]);
   }
-  for (Ipopt::Index i = 0; i < SourceData.number - 1; i++) {
+  for (Ipopt::Index i = 0; i < SourceData.number - 0; i++) {
     opt_deltas.emplace_back(x[5 * SourceData.number + i]);
   }
   vector<double> X;
@@ -654,7 +664,7 @@ void SpiralSmootherNLP::finalize_solution(
     X2.emplace_back(p.first);
     Y2.emplace_back(p.second);
   }
-  for (int i = 0; i < SourceData.number - 1; i++) {
+  for (int i = 0; i < SourceData.number; i++) {
     CoefInitialize(opt_thetai[i], opt_dthetai[i], opt_ddthetai[i],
                    opt_thetai[i + 1], opt_dthetai[i + 1], opt_ddthetai[i + 1],
                    opt_deltas[i]);
@@ -691,6 +701,7 @@ void SpiralSmootherNLP::finalize_solution(
       keywords1.insert(pair<string, string>("label", "Pramal Points"));
       keywords1.insert(pair<string, string>("marker", "p"));
       plt::scatter(X2, Y2, 10.0, keywords1);
+      plt::plot(X2, Y2);
 
       std::map<std::string, std::string> keywords2;
       keywords2.insert(pair<string, string>("label", "Spiral Points"));
